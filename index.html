@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNACHI - Identificación Criminal</title>
+<script src="auth.js"></script>
+<script src="atlas_data.js"></script>
+<style>
+:root{--bg:#0f1923;--bg2:#0a1628;--bg3:#162a4a;--text:#e0e0e0;--text2:rgba(255,255,255,0.5);--text3:rgba(255,255,255,0.3);--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.08);--card:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));--accent:#4a90d9;--accent2:rgba(74,144,217,0.2);--quiz-bg:rgba(255,255,255,0.05);--quiz-border:rgba(255,255,255,0.1);--success:#2ecc71;--btn-bg:rgba(255,255,255,0.08);--btn-border:rgba(255,255,255,0.15);--header:linear-gradient(135deg,#0a1628,#162a4a);--header-border:rgba(255,255,255,0.08)}
+body.claro{--bg:#f0f2f5;--bg2:#e0e4ea;--bg3:#d0d6e0;--text:#1a1a2e;--text2:rgba(0,0,0,0.5);--text3:rgba(0,0,0,0.3);--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.08);--card:linear-gradient(135deg,rgba(255,255,255,0.8),rgba(255,255,255,0.5));--accent:#2563eb;--accent2:rgba(37,99,235,0.15);--quiz-bg:#fff;--quiz-border:rgba(0,0,0,0.12);--success:#16a34a;--btn-bg:rgba(0,0,0,0.06);--btn-border:rgba(0,0,0,0.12);--header:linear-gradient(135deg,#e0e4ea,#d0d6e0);--header-border:rgba(0,0,0,0.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+.header{background:var(--header);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--header-border)}
+.header h1{font-size:20px;display:flex;align-items:center;gap:10px;color:var(--text)}
+.header h1 span{color:var(--accent)}
+.header-right{display:flex;align-items:center;gap:10px}
+.user-badge{font-size:13px;color:var(--text2)}
+.theme-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--btn-bg);color:var(--text);cursor:pointer;font-size:18px;transition:all .3s;display:flex;align-items:center;justify-content:center}
+.theme-btn:hover{background:var(--accent2);border-color:var(--accent)}
+.logout-btn{padding:8px 16px;background:var(--btn-bg);border:1px solid var(--btn-border);border-radius:8px;color:var(--text);cursor:pointer;font-size:13px;transition:background .3s}
+.logout-btn:hover{background:var(--accent2)}
+.container{max-width:1200px;margin:0 auto;padding:40px 20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:40px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;cursor:pointer;transition:all .3s;text-decoration:none;color:var(--text);backdrop-filter:blur(10px)}
+.card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 12px 40px rgba(37,99,235,0.15)}
+.card-icon{font-size:48px;margin-bottom:16px}
+.card h2{font-size:20px;margin-bottom:8px}
+.card p{color:var(--text2);font-size:14px}
+.card .badge{display:inline-block;margin-top:12px;padding:4px 12px;background:var(--accent2);border-radius:20px;font-size:12px;color:var(--accent)}
+#simulacrosSection,#atlasSection{display:none}
+.section-back{margin-bottom:20px;display:flex;gap:10px}
+.section-back button{padding:8px 20px;background:var(--btn-bg);border:1px solid var(--btn-border);border-radius:8px;color:var(--text);cursor:pointer;font-size:14px;transition:background .3s}
+.section-back button:hover{background:var(--accent2)}
+.lotes-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}
+.lote-btn{padding:6px 14px;background:var(--btn-bg);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;transition:all .3s}
+.lote-btn:hover,.lote-btn.active{background:var(--accent2);border-color:var(--accent);color:var(--text)}
+.atlas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px}
+.atlas-grid img{width:100%;border-radius:8px;cursor:pointer;transition:transform .3s;border:1px solid var(--border2);background:rgba(0,0,0,0.2)}
+.atlas-grid img:hover{transform:scale(1.05);border-color:var(--accent)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:1000;align-items:center;justify-content:center;padding:40px}
+.modal.show{display:flex}
+.modal img{max-width:92%;max-height:92vh;border-radius:8px;object-fit:contain}
+.modal-close{position:absolute;top:20px;right:30px;color:#fff;font-size:42px;cursor:pointer;opacity:.6;transition:opacity .3s;z-index:1001}
+.modal-close:hover{opacity:1}
+#mainView{display:block}
+.quiz-card{background:var(--quiz-bg);border:1px solid var(--quiz-border);border-radius:12px;padding:24px;margin-bottom:16px;font-size:18px;line-height:1.6}
+.opcion-btn{width:100%;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--btn-bg);color:var(--text);cursor:pointer;font-size:15px;transition:all .3s;text-align:left}
+.opcion-btn:hover{background:var(--accent2);border-color:var(--accent)}
+.opcion-btn.correcta{border-color:var(--success);background:rgba(46,204,113,0.15);color:var(--success)}
+.opcion-btn.incorrecta{border-color:#ef4444;background:rgba(239,68,68,0.15);color:#ef4444}
+.btn-primario{padding:12px 24px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .3s}
+.btn-primario:hover{opacity:.9}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>🕵️ <span>UNACHI</span> — Identificación Criminal</h1>
+<div class="header-right">
+<span class="user-badge" id="userBadge"></span>
+<button class="theme-btn" id="themeToggle" onclick="toggleTema()" title="Cambiar modo">🌙</button>
+<button class="logout-btn" onclick="logout()">Salir</button>
+</div>
+</div>
+
+<div class="container" id="mainView">
+<div class="cards">
+<a class="card" href="flashcards.html">
+<div class="card-icon">🃏</div>
+<h2>Flashcards</h2>
+<p>Repaso interactivo con preguntas y respuestas</p>
+<span class="badge">300+ tarjetas</span>
+</a>
+<div class="card" onclick="showSection('simulacros')">
+<div class="card-icon">📝</div>
+<h2>Simulacros</h2>
+<p>Exámenes simulacro para practicar</p>
+</div>
+<div class="card" onclick="showSection('atlas')">
+<div class="card-icon">🗺️</div>
+<h2>Atlas Visual</h2>
+<p>Galería de imágenes forenses</p>
+<span class="badge">275 imágenes</span>
+</div>
+</div>
+</div>
+
+<div class="container" id="simulacrosSection">
+<div class="section-back">
+<button onclick="hideSection('simulacros')">← Volver</button>
+<button onclick="iniciarSimulacro()" style="background:var(--accent);color:#fff;border:none" id="btnIniciarQuiz">▶ Iniciar Simulacro</button>
+</div>
+<div id="quizPanel">
+<div id="quizStartMsg" style="text-align:center;padding:60px 20px;background:var(--card);border:1px solid var(--border);border-radius:16px">
+<div style="font-size:72px;margin-bottom:16px;opacity:.6">📝</div>
+<h2 style="margin-bottom:8px">Simulacro de Identificación Criminal</h2>
+<p style="color:var(--text2);margin-bottom:20px;font-size:15px">10 preguntas · 15 minutos · Revisa las respuestas una por una</p>
+<span class="badge">Listo para comenzar</span>
+</div>
+</div>
+<div id="quizContainer" style="display:none">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--quiz-bg);border-radius:10px;border:1px solid var(--quiz-border)">
+<span id="quizProgress" style="color:var(--text2);font-size:14px">Pregunta 1 de 10</span>
+<span id="quizTimer" style="color:var(--accent);font-size:16px;font-weight:600">15:00</span>
+</div>
+<div id="quizQuestion" class="quiz-card"></div>
+<div id="quizOptions" style="display:grid;gap:10px"></div>
+<div id="quizNextWrapper" style="display:none;margin-top:16px;text-align:right">
+<button class="btn-primario" onclick="siguientePregunta()">Siguiente →</button>
+</div>
+<div id="quizResult" style="display:none;text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:16px">
+<div style="font-size:64px;margin-bottom:16px" id="resultIcon">📝</div>
+<h2 id="resultTitle" style="margin-bottom:8px">Simulacro completado</h2>
+<p id="resultText" style="color:var(--text2);font-size:18px"></p>
+<br>
+<button class="btn-primario" onclick="hideSection('simulacros')">Volver al inicio</button>
+</div>
+</div>
+</div>
+
+<div class="container" id="atlasSection">
+<div class="section-back"><button onclick="hideSection('atlas')">← Volver</button></div>
+<h2 style="margin-bottom:8px">🗺️ Atlas Visual</h2>
+<p style="color:var(--text2);margin-bottom:16px">Seleccione un lote para ver las imágenes</p>
+<div class="lotes-nav" id="lotesNav"></div>
+<div class="atlas-grid" id="atlasGrid"><p style="color:var(--text3);padding:20px">Cargando atlas...</p></div>
+</div>
+
+<div class="modal" id="imageModal" onclick="closeModal()">
+<span class="modal-close">&times;</span>
+<img id="modalImage" src="" alt="">
+</div>
+
+<script>
+var preguntasSimulacro = [
+    {p:"¿Qué es la identificación criminal?",r:"El proceso de determinar la identidad de una persona mediante características físicas, biológicas o de comportamiento."},
+    {p:"¿Cuál es el método principal de identificación dactiloscópica?",r:"El método de Vucetich, basado en el análisis de crestas papilares."},
+    {p:"¿Qué es la morfocomparación?",r:"Técnica que compara características morfológicas faciales para establecer identidad."},
+    {p:"¿Cuál es el principio de intercambio de Locard?",r:"Todo contacto deja una huella. El criminal siempre lleva algo de la escena y deja algo de sí mismo."},
+    {p:"¿Qué estudia la hemogenética forense?",r:"El análisis de sangre y fluidos corporales para identificación mediante marcadores genéticos."},
+    {p:"¿Qué son los puntos característicos en dactiloscopia?",r:"Son las particularidades únicas de las crestas papilares que individualizan una huella."},
+    {p:"¿Qué es el atlas visual forense?",r:"Una colección organizada de imágenes de referencia para identificación criminal."},
+    {p:"¿Cuál es la importancia de la memoria y percepción en criminalística?",r:"Son fundamentales para la obtención de retratos hablados y reconocimiento de sospechosos."},
+    {p:"¿Qué son los patrones de sangre en la escena del crimen?",r:"Son las marcas y manchas de sangre que ayudan a reconstruir los hechos violentos."},
+    {p:"¿Qué es la individualización criminal?",r:"El proceso de asociar evidencia a una fuente única con certeza científica."}
+];
+
+var preguntaActual = 0;
+var timerInterval = null;
+var segundosRestantes = 0;
+
+function showSection(section) {
+    document.getElementById('mainView').style.display = 'none';
+    document.getElementById('simulacrosSection').style.display = section === 'simulacros' ? 'block' : 'none';
+    document.getElementById('atlasSection').style.display = section === 'atlas' ? 'block' : 'none';
+    if (section === 'atlas') { cargarAtlas(); }
+    if (section === 'simulacros') { reiniciarVistaQuiz(); }
+}
+
+function hideSection(section) {
+    if (section === 'simulacros') {
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
+    document.getElementById(section + 'Section').style.display = 'none';
+    document.getElementById('mainView').style.display = 'block';
+}
+
+function reiniciarVistaQuiz() {
+    document.getElementById('quizContainer').style.display = 'none';
+    document.getElementById('quizStartMsg').style.display = 'block';
+    document.getElementById('btnIniciarQuiz').style.display = 'inline-block';
+}
+
+function cargarAtlas() {
+    var lotes = Object.keys(ATLAS_DATA).sort(function(a,b){
+        return parseInt(a.replace('lote_',''),10) - parseInt(b.replace('lote_',''),10);
+    });
+    var nav = document.getElementById('lotesNav');
+    nav.innerHTML = '';
+    lotes.forEach(function(lote){
+        var btn = document.createElement('button');
+        btn.className = 'lote-btn';
+        btn.textContent = lote.replace('_',' ').toUpperCase();
+        btn.onclick = function(){
+            document.querySelectorAll('.lote-btn').forEach(function(b){b.classList.remove('active');});
+            btn.classList.add('active');
+            mostrarLote(lote);
+        };
+        nav.appendChild(btn);
+    });
+    document.getElementById('atlasGrid').innerHTML = '<p style="color:var(--text3);padding:20px">Seleccione un lote arriba</p>';
+}
+
+function mostrarLote(lote) {
+    var grid = document.getElementById('atlasGrid');
+    grid.innerHTML = '';
+    var imagenes = ATLAS_DATA[lote] || [];
+    if (imagenes.length === 0) {
+        grid.innerHTML = '<p style="color:var(--text3);padding:20px">Este lote no contiene imágenes.</p>';
+        return;
+    }
+    imagenes.forEach(function(src){
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = lote;
+        img.loading = 'lazy';
+        img.onerror = function(){ this.style.display = 'none'; };
+        img.onclick = function(){
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.add('show');
+        };
+        grid.appendChild(img);
+    });
+}
+
+function closeModal() {
+    document.getElementById('imageModal').classList.remove('show');
+}
+
+function iniciarSimulacro() {
+    preguntaActual = 0;
+    segundosRestantes = 900;
+    document.getElementById('quizStartMsg').style.display = 'none';
+    document.getElementById('btnIniciarQuiz').style.display = 'none';
+    document.getElementById('quizContainer').style.display = 'block';
+    document.getElementById('quizResult').style.display = 'none';
+    document.getElementById('quizQuestion').style.display = 'block';
+    document.getElementById('quizOptions').style.display = 'grid';
+    document.getElementById('quizProgress').style.display = 'block';
+    document.getElementById('quizTimer').style.display = 'block';
+    mostrarPregunta();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(function(){
+        segundosRestantes--;
+        var m = Math.floor(segundosRestantes / 60);
+        var s = segundosRestantes % 60;
+        document.getElementById('quizTimer').textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        if (segundosRestantes <= 0) { finalizarSimulacro(); }
+    }, 1000);
+}
+
+function mostrarPregunta() {
+    if (preguntaActual >= preguntasSimulacro.length) { finalizarSimulacro(); return; }
+    var q = preguntasSimulacro[preguntaActual];
+    document.getElementById('quizProgress').textContent = 'Pregunta ' + (preguntaActual + 1) + ' de ' + preguntasSimulacro.length;
+    document.getElementById('quizQuestion').textContent = q.p;
+    document.getElementById('quizNextWrapper').style.display = 'none';
+    var opts = document.getElementById('quizOptions');
+    opts.innerHTML = '';
+    var btnVer = document.createElement('button');
+    btnVer.className = 'opcion-btn';
+    btnVer.textContent = '👁 Ver respuesta';
+    btnVer.onclick = function(){
+        opts.innerHTML = '';
+        var ans = document.createElement('div');
+        ans.style.cssText = 'padding:16px;border:1px solid rgba(46,204,113,0.4);border-radius:10px;background:rgba(46,204,113,0.1);color:var(--success);font-size:15px;line-height:1.5';
+        ans.textContent = '✓ ' + q.r;
+        opts.appendChild(ans);
+        document.getElementById('quizNextWrapper').style.display = 'block';
+    };
+    opts.appendChild(btnVer);
+}
+
+function siguientePregunta() {
+    preguntaActual++;
+    if (preguntaActual >= preguntasSimulacro.length) { finalizarSimulacro(); return; }
+    mostrarPregunta();
+}
+
+function finalizarSimulacro() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    document.getElementById('quizQuestion').style.display = 'none';
+    document.getElementById('quizOptions').style.display = 'none';
+    document.getElementById('quizNextWrapper').style.display = 'none';
+    document.getElementById('quizProgress').style.display = 'none';
+    document.getElementById('quizTimer').style.display = 'none';
+    document.getElementById('quizResult').style.display = 'block';
+    document.getElementById('resultTitle').textContent = 'Simulacro completado';
+    document.getElementById('resultText').textContent = 'Revisaste ' + preguntasSimulacro.length + ' preguntas. ¡Sigue practicando!';
+}
+
+function toggleTema() {
+    var body = document.body;
+    body.classList.toggle('claro');
+    var btn = document.getElementById('themeToggle');
+    btn.textContent = body.classList.contains('claro') ? '☀️' : '🌙';
+    localStorage.setItem('unachi_tema', body.classList.contains('claro') ? 'claro' : 'oscuro');
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeModal(); }
+});
+
+document.getElementById('userBadge').textContent = '👤 ' + getUserName();
+
+if (localStorage.getItem('unachi_tema') === 'claro') {
+    document.body.classList.add('claro');
+    document.getElementById('themeToggle').textContent = '☀️';
+}
+
+requireAuth();
+</script>
+</body>
+</html>
